@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="index.css">
+    <link rel="icon" href="https://e7.pngegg.com/pngimages/168/115/png-clipart-responsive-web-design-web-browser-computer-icons-red-web-website-search-engine-optimization-web-design.png">
+    <title>Movie Recommender</title>
+    <script>
+        async function searchMovie() {
+            const queryText = document.getElementById("query").value;
+            const loadingIndicator = document.getElementById("loading");
+            const output = document.getElementById("output");
+            // Show loading indicator and clear previous results
+            loadingIndicator.style.display = "block";
+            output.innerHTML = "";
+            const query = { text: queryText };
+            const response = await fetch('http://localhost:3002/search', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ query })
+            });
+
+            const result = await response.json();
+            console.log(result);
+
+            output.innerHTML = "";
+
+            result.searchedMovie.forEach(movie => {
+                const movieElement = document.createElement("div");
+                movieElement.classList.add("movie-details");
+                
+                movieElement.innerHTML = `
+                    <div id='left'>
+                        <h3>${movie.metadata["title"]}</h3>
+                        <p><strong>ID:</strong> ${movie.metadata["id"]}</p>
+                        <p><strong>Original Language:</strong> ${movie.metadata["original_language"]}</p>
+                        <p><strong>Genre IDs:</strong> ${movie.metadata["genre_ids"]}</p>
+                        <p><strong>Release Date:</strong> ${movie.metadata["release_date"]}</p>
+                        <p><strong>Vote Average:</strong> ${movie.metadata["vote_average"]}</p>
+                        <p><strong>Vote Count:</strong> ${movie.metadata["vote_count"]}</p>
+                        <p><strong>Popularity:</strong> ${movie.metadata["popularity"]}</p>
+                        <p><strong>Original Title:</strong> ${movie.metadata["original_title"]}</p>
+                        <p><strong>Overview:</strong> ${movie.metadata["overview"]}</p>
+                    </div>
+                    <div id='right'>
+                        <img src="${movie.score === 1 ? 'image.png' : movie.metadata['poster_path']}" alt="Movie Poster", id="movie-poster" onerror="this.src='https://files.prokerala.com/movies/assets/img/no-poster-available.jpg'">
+                    </div>
+                `;
+                movieElement.onclick = function() {
+                    if (movie.score === 1) {
+                        window.location.href = `https://i.imgflip.com/6b9bz1.jpg`;
+                    }
+                    else {
+                        window.location.href = `https://www.themoviedb.org/movie/${movie.metadata["id"]}`;
+                    }
+                };
+                loadingIndicator.style.display = "none";
+                output.appendChild(movieElement);
+            });
+        }
+        handle = (event) => {
+            if (event.key === 'Enter') {
+                searchMovie();
+            }
+        }
+    </script>
+</head>
+<body>
+    <h1>Movie Recommender</h1>
+    <div class="search-container">
+        <input type="text" id="query" placeholder="Enter movie description", onkeypress="handle(event)">
+        <button onclick="searchMovie()" name="q">Search</button>
+      </div>
+    
+    <div id="loading">Loading<img src="https://cdn.pixabay.com/animation/2024/04/02/07/57/07-57-40-974_512.gif"/></div>
+    
+    <div id="output"></div>
+</body>
+</html>
